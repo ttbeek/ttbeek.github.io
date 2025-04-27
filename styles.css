@@ -2,7 +2,10 @@
     display: flex;
 }
 .fixed{
-    width: 400px;
+    background-color: #eff5ef;
+    min-width: 420px;
+    overflow-y: auto;
+    max-height: 2200px;
 }
 .flex-item{
     flex-grow: 1;
