@@ -5,22 +5,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+AANTAL_SETLISTS = 15
 
-def haal_op_setlists():
+
+def haal_op_setlists(pagina: int = 1):
     res = requests.get(
-        "https://api.setlist.fm/rest/1.0/user/Tijmen_31/attended?p=1",
+        f"https://api.setlist.fm/rest/1.0/user/Tijmen_31/attended?p={pagina}",
         headers={
             "x-api-key": os.environ["SETLIST_API_KEY"],
             "Accept": "application/json",
         }
     )
+    print(res.status_code)
     return res.json()
 
 
-def maak_html_widgets(setlists: dict):
+def maak_html_widgets(setlists: list[dict[str, str]]):
     widgets = ""
-
-    for setlist in setlists["setlist"]:
+    for setlist in setlists:
         # Sets zonder nummers overslaan
         if setlist["sets"] == {"set": []}:
             continue
@@ -48,6 +50,17 @@ def verwerk_html_sjabloon(widgets: str):
 
 
 if __name__ == "__main__":
-    setlists = haal_op_setlists()
+    setlists = []
+    pagina = 1
+    while len(setlists) < AANTAL_SETLISTS:
+        resultaat = haal_op_setlists(pagina)
+        setlists += [
+            setlist for setlist in resultaat["setlist"]
+            if setlist["sets"] != {"set": []}
+        ]
+        pagina += 1
+
+    print("Aantal setlists", len(setlists))
+    print([i["artist"]["name"] for i in setlists])
     widgets = maak_html_widgets(setlists)
     verwerk_html_sjabloon(widgets)
